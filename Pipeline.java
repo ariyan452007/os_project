@@ -72,7 +72,12 @@ public class Pipeline {
                         final OutputStream outStream = p.getOutputStream();
                         Thread t = new Thread(() -> {
                             try {
-                                inStream.transferTo(outStream);
+                                byte[] buf = new byte[8192];
+                                int n;
+                                while ((n = inStream.read(buf)) != -1) {
+                                    outStream.write(buf, 0, n);
+                                    outStream.flush();
+                                }
                                 outStream.close();
                             } catch (Exception e) {}
                         });

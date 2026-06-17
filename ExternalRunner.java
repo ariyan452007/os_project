@@ -78,7 +78,12 @@ public class ExternalRunner {
     private static void transferStream(InputStream is, OutputStream os) {
         new Thread(() -> {
             try {
-                is.transferTo(os);
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = is.read(buf)) != -1) {
+                    os.write(buf, 0, n);
+                    os.flush();
+                }
             } catch (Exception ignored) {}
         }).start();
     }
