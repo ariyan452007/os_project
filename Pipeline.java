@@ -26,9 +26,32 @@ public class Pipeline {
 
         if (!hasBuiltin) {
             List<ProcessBuilder> builders = new ArrayList<>();
-            for (Command cmd : commands) {
+            for (int i = 0; i < commands.size(); i++) {
+                Command cmd = commands.get(i);
                 ProcessBuilder pb = new ProcessBuilder(cmd.args);
                 pb.directory(new File(Main.cwd));
+                
+                if (i == 0) {
+                    pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+                }
+                if (i == commands.size() - 1) {
+                    if (cmd.stdoutRedirect != null) {
+                        pb.redirectOutput(cmd.stdoutAppend ? 
+                            ProcessBuilder.Redirect.appendTo(new File(cmd.stdoutRedirect)) : 
+                            ProcessBuilder.Redirect.to(new File(cmd.stdoutRedirect)));
+                    } else {
+                        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                    }
+                    if (cmd.stderrRedirect != null) {
+                        pb.redirectError(cmd.stderrAppend ? 
+                            ProcessBuilder.Redirect.appendTo(new File(cmd.stderrRedirect)) : 
+                            ProcessBuilder.Redirect.to(new File(cmd.stderrRedirect)));
+                    } else {
+                        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+                    }
+                } else {
+                    pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+                }
                 builders.add(pb);
             }
             try {
