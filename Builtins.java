@@ -11,7 +11,7 @@ import java.util.Set;
  * If they ran in a child, the environment changes would be lost once the child died.
  */
 public class Builtins {
-    private static final Set<String> BUILTINS = new HashSet<>(Arrays.asList("exit", "echo", "type", "pwd", "cd", "jobs"));
+    private static final Set<String> BUILTINS = new HashSet<>(Arrays.asList("exit", "echo", "type", "pwd", "cd", "jobs", "history"));
     
     public static boolean isBuiltin(String name) {
         return BUILTINS.contains(name);
@@ -83,6 +83,24 @@ public class Builtins {
                 return 0;
             case "jobs":
                 JobTable.listJobs(out);
+                return 0;
+            case "history":
+                if (args.isEmpty()) {
+                    for (int i = 0; i < Main.historyList.size(); i++) {
+                        out.printf("%d  %s\n", i + 1, Main.historyList.get(i));
+                    }
+                } else if (args.size() > 1 && args.get(0).equals("-r")) {
+                    File f = new File(args.get(1));
+                    if (!f.isAbsolute()) f = new File(Main.cwd, args.get(1));
+                    try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(f))) {
+                        String fileLine;
+                        while ((fileLine = br.readLine()) != null) {
+                            if (!fileLine.trim().isEmpty()) {
+                                Main.historyList.add(fileLine);
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
                 return 0;
         }
         return 1;

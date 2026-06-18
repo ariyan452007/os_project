@@ -12,6 +12,7 @@ import java.util.List;
 public class Main {
     // Tracks the current working directory, analogous to the process's CWD in the OS.
     public static String cwd = System.getProperty("user.dir");
+    public static java.util.List<String> historyList = new java.util.ArrayList<>();
     
     public static void main(String[] args) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -27,6 +28,7 @@ public class Main {
             String line = reader.readLine();
             if (line == null) break; // EOF (Ctrl+D)
             if (line.trim().isEmpty()) continue;
+            historyList.add(line);
             
             List<Command> pipeline = Parser.parse(line);
             if (pipeline.isEmpty()) continue;
