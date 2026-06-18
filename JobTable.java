@@ -20,30 +20,53 @@ public class JobTable {
     private static List<Job> jobs = new ArrayList<>();
     private static int nextId = 1;
     
-    public static void addJob(Process p, String cmdStr) {
+    public static int addJob(Process p, String cmdStr) {
         Job j = new Job();
-        j.id = nextId++;
+        int id = 1;
+        while (true) {
+            boolean taken = false;
+            for (Job existing : jobs) {
+                if (existing.id == id) {
+                    taken = true;
+                    break;
+                }
+            }
+            if (!taken) break;
+            id++;
+        }
+        j.id = id;
         j.pid = p.pid();
         j.commandStr = cmdStr;
         j.process = p;
         jobs.add(j);
+        return j.id;
     }
     
     public static void reapJobs() {
-        Iterator<Job> it = jobs.iterator();
-        while(it.hasNext()) {
-            Job j = it.next();
+        for (int i = 0; i < jobs.size(); i++) {
+            Job j = jobs.get(i);
             // Checking process status without blocking (simulates waitpid(..., WNOHANG))
             if (!j.process.isAlive()) {
-                System.out.printf("[%d]+ Done %s\n", j.id, j.commandStr);
-                it.remove();
+                char marker = ' ';
+                if (i == jobs.size() - 1) marker = '+';
+                else if (i == jobs.size() - 2) marker = '-';
+                System.out.printf("[%d]%c  %-24s%s\n", j.id, marker, "Done", j.commandStr);
+                jobs.remove(i);
+                i--;
             }
         }
     }
     
     public static void listJobs(PrintStream out) {
-        for (Job j : jobs) {
-            out.printf("[%d] %d Running %s\n", j.id, j.pid, j.commandStr);
+        List<Job> sortedJobs = new ArrayList<>(jobs);
+        sortedJobs.sort((a, b) -> Integer.compare(a.id, b.id));
+        
+        for (Job j : sortedJobs) {
+            char marker = ' ';
+            if (jobs.size() > 0 && j == jobs.get(jobs.size() - 1)) marker = '+';
+            else if (jobs.size() > 1 && j == jobs.get(jobs.size() - 2)) marker = '-';
+            
+            out.printf("[%d]%c  %-24s%s\n", j.id, marker, "Running", j.commandStr);
         }
     }
 }

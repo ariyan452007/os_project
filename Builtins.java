@@ -87,7 +87,7 @@ public class Builtins {
             case "history":
                 if (args.isEmpty()) {
                     for (int i = 0; i < Main.historyList.size(); i++) {
-                        out.printf("%d  %s\n", i + 1, Main.historyList.get(i));
+                        out.printf("%5d  %s\n", i + 1, Main.historyList.get(i));
                     }
                 } else if (args.size() > 1 && args.get(0).equals("-r")) {
                     File f = new File(args.get(1));
@@ -112,9 +112,10 @@ public class Builtins {
                     File f = new File(args.get(1));
                     if (!f.isAbsolute()) f = new File(Main.cwd, args.get(1));
                     try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileWriter(f, true))) {
-                        for (String cmdLine : Main.historyList) {
-                            pw.println(cmdLine);
+                        for (int i = Main.lastHistoryAppendIndex; i < Main.historyList.size(); i++) {
+                            pw.println(Main.historyList.get(i));
                         }
+                        Main.lastHistoryAppendIndex = Main.historyList.size();
                     } catch (Exception ignored) {}
                 }
                 return 0;

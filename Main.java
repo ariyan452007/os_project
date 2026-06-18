@@ -13,8 +13,30 @@ public class Main {
     // Tracks the current working directory, analogous to the process's CWD in the OS.
     public static String cwd = System.getProperty("user.dir");
     public static java.util.List<String> historyList = new java.util.ArrayList<>();
+    public static int lastHistoryAppendIndex = 0;
     
     public static void main(String[] args) throws Exception {
+        String histFile = System.getenv("HISTFILE");
+        if (histFile != null) {
+            try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(histFile))) {
+                String fileLine;
+                while ((fileLine = br.readLine()) != null) {
+                    if (!fileLine.trim().isEmpty()) {
+                        historyList.add(fileLine);
+                    }
+                }
+            } catch (Exception ignored) {}
+            lastHistoryAppendIndex = historyList.size();
+            
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileWriter(histFile))) {
+                    for (String cmdLine : historyList) {
+                        pw.println(cmdLine);
+                    }
+                } catch (Exception ignored) {}
+            }));
+        }
+        
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         
         while (true) {
