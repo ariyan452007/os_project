@@ -108,6 +108,14 @@ public class Builtins {
                             pw.println(cmdLine);
                         }
                     } catch (Exception ignored) {}
+                } else if (args.size() > 1 && args.get(0).equals("-a")) {
+                    File f = new File(args.get(1));
+                    if (!f.isAbsolute()) f = new File(Main.cwd, args.get(1));
+                    try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileWriter(f, true))) {
+                        for (String cmdLine : Main.historyList) {
+                            pw.println(cmdLine);
+                        }
+                    } catch (Exception ignored) {}
                 }
                 return 0;
         }
